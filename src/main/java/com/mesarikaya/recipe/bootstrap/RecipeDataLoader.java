@@ -4,16 +4,19 @@ import com.mesarikaya.recipe.dataRepositories.CategoryRepository;
 import com.mesarikaya.recipe.dataRepositories.RecipeRepository;
 import com.mesarikaya.recipe.dataRepositories.UnitOfMeasureRepository;
 import com.mesarikaya.recipe.model.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Component
 public class RecipeDataLoader implements ApplicationListener<ContextRefreshedEvent> {
 
@@ -29,12 +32,13 @@ public class RecipeDataLoader implements ApplicationListener<ContextRefreshedEve
     }
 
     @Override
+    @Transactional
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         recipeRepository.saveAll(loadData());
     }
 
     private List<Recipe> loadData(){
-
+        log.debug("Inside locaData bootstrap class");
         List<Recipe> recipes = new ArrayList<>(2);
 
         //get UOMs
