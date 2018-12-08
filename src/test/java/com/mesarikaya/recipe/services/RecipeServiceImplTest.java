@@ -1,17 +1,18 @@
 package com.mesarikaya.recipe.services;
 
+import com.mesarikaya.recipe.converters.RecipeCommandToRecipe;
+import com.mesarikaya.recipe.converters.RecipeToRecipeCommand;
 import com.mesarikaya.recipe.dataRepositories.RecipeRepository;
 import com.mesarikaya.recipe.model.Recipe;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.*;
 
 public class RecipeServiceImplTest {
 
@@ -20,22 +21,33 @@ public class RecipeServiceImplTest {
     @Mock
     RecipeRepository recipeRepository;
 
+    @Mock
+    RecipeToRecipeCommand recipeToRecipeCommand;
+
+    @Mock
+    RecipeCommandToRecipe recipeCommandToRecipe;
+
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        recipeService = new RecipeServiceImpl(recipeRepository);
+
+        recipeService = new RecipeServiceImpl(recipeRepository, recipeCommandToRecipe, recipeToRecipeCommand);
     }
 
     @Test
-    public void getRecipe() {
+    public void getRecipeByIdTest() throws Exception {
         Recipe recipe = new Recipe();
-        HashSet recipeData = new HashSet();
-        recipeData.add(recipe);
+        recipe.setId(1L);
+        Optional<Recipe> recipeOptional = Optional.of(recipe);
 
-        Mockito.when(recipeService.getRecipe()).thenReturn(recipeData);
-        Set<Recipe> recipes = recipeService.getRecipe();
-        assertEquals(recipes.size(), 1);
-        Mockito.verify(recipeRepository, Mockito.times(1)).findAll();
+        when(recipeRepository.findById(anyLong())).thenReturn(recipeOptional);
+
+        Recipe recipeReturned = recipeService.findById(1L);
+
+        assertNotNull("Null recipe returned", recipeReturned);
+        verify(recipeRepository, times(1)).findById(anyLong());
+        verify(recipeRepository, never()).findAll();
     }
+
 
 }
