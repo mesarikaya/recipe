@@ -5,7 +5,6 @@ import com.mesarikaya.recipe.dataRepositories.RecipeRepository;
 import com.mesarikaya.recipe.dataRepositories.UnitOfMeasureRepository;
 import com.mesarikaya.recipe.model.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -20,25 +19,25 @@ import java.util.Optional;
 @Component
 public class RecipeDataLoader implements ApplicationListener<ContextRefreshedEvent> {
 
-    private RecipeRepository recipeRepository;
-    private CategoryRepository categoryRepository;
-    private UnitOfMeasureRepository unitOfMeasureRepository;
+    private final CategoryRepository categoryRepository;
+    private final RecipeRepository recipeRepository;
+    private final UnitOfMeasureRepository unitOfMeasureRepository;
 
-    @Autowired
-    public RecipeDataLoader(RecipeRepository recipeRepository, CategoryRepository categoryRepository, UnitOfMeasureRepository unitOfMeasureRepository) {
-        this.recipeRepository = recipeRepository;
+    public RecipeDataLoader(CategoryRepository categoryRepository, RecipeRepository recipeRepository, UnitOfMeasureRepository unitOfMeasureRepository) {
         this.categoryRepository = categoryRepository;
+        this.recipeRepository = recipeRepository;
         this.unitOfMeasureRepository = unitOfMeasureRepository;
     }
 
     @Override
     @Transactional
-    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        recipeRepository.saveAll(loadData());
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        recipeRepository.saveAll(getRecipes());
+        log.debug("Loading Bootstrap Data");
     }
 
-    private List<Recipe> loadData(){
-        log.debug("Inside locaData bootstrap class");
+    private List<Recipe> getRecipes() {
+
         List<Recipe> recipes = new ArrayList<>(2);
 
         //get UOMs
@@ -83,7 +82,7 @@ public class RecipeDataLoader implements ApplicationListener<ContextRefreshedEve
         UnitOfMeasure tableSpoonUom = tableSpoonUomOptional.get();
         UnitOfMeasure teapoonUom = tableSpoonUomOptional.get();
         UnitOfMeasure dashUom = dashUomOptional.get();
-        UnitOfMeasure pintUom = pintUomOptional.get();
+        UnitOfMeasure pintUom = dashUomOptional.get();
         UnitOfMeasure cupsUom = cupsUomOptional.get();
 
         //get Categories
@@ -129,8 +128,10 @@ public class RecipeDataLoader implements ApplicationListener<ContextRefreshedEve
                 "\n" +
                 "\n" +
                 "Read more: http://www.simplyrecipes.com/recipes/perfect_guacamole/#ixzz4jvoun5ws");
+
         guacRecipe.setNotes(guacNotes);
 
+        //very redundent - could add helper method, and make this simpler
         guacRecipe.addIngredient(new Ingredient("ripe avocados", new BigDecimal(2), eachUom));
         guacRecipe.addIngredient(new Ingredient("Kosher salt", new BigDecimal(".5"), teapoonUom));
         guacRecipe.addIngredient(new Ingredient("fresh lime juice or lemon juice", new BigDecimal(2), tableSpoonUom));
@@ -142,6 +143,10 @@ public class RecipeDataLoader implements ApplicationListener<ContextRefreshedEve
 
         guacRecipe.getCategories().add(americanCategory);
         guacRecipe.getCategories().add(mexicanCategory);
+
+        guacRecipe.setUrl("http://www.simplyrecipes.com/recipes/perfect_guacamole/");
+        guacRecipe.setServings(4);
+        guacRecipe.setSource("Simply Recipes");
 
         //add to return list
         recipes.add(guacRecipe);
@@ -175,8 +180,8 @@ public class RecipeDataLoader implements ApplicationListener<ContextRefreshedEve
                 "\n" +
                 "\n" +
                 "Read more: http://www.simplyrecipes.com/recipes/spicy_grilled_chicken_tacos/#ixzz4jvu7Q0MJ");
-        tacosRecipe.setNotes(tacoNotes);
 
+        tacosRecipe.setNotes(tacoNotes);
 
         tacosRecipe.addIngredient(new Ingredient("Ancho Chili Powder", new BigDecimal(2), tableSpoonUom));
         tacosRecipe.addIngredient(new Ingredient("Dried Oregano", new BigDecimal(1), teapoonUom));
@@ -201,9 +206,11 @@ public class RecipeDataLoader implements ApplicationListener<ContextRefreshedEve
         tacosRecipe.getCategories().add(americanCategory);
         tacosRecipe.getCategories().add(mexicanCategory);
 
+        tacosRecipe.setUrl("http://www.simplyrecipes.com/recipes/spicy_grilled_chicken_tacos/");
+        tacosRecipe.setServings(4);
+        tacosRecipe.setSource("Simply Recipes");
+
         recipes.add(tacosRecipe);
-
         return recipes;
-
     }
 }
