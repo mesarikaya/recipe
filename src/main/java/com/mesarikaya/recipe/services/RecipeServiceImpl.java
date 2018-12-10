@@ -4,6 +4,7 @@ import com.mesarikaya.recipe.commands.RecipeCommand;
 import com.mesarikaya.recipe.converters.RecipeCommandToRecipe;
 import com.mesarikaya.recipe.converters.RecipeToRecipeCommand;
 import com.mesarikaya.recipe.dataRepositories.RecipeRepository;
+import com.mesarikaya.recipe.exceptions.NotFoundException;
 import com.mesarikaya.recipe.model.Recipe;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class RecipeServiceImpl implements RecipeService {
         Optional<Recipe> recipeOptional = recipeRepository.findById(l);
 
         if(!recipeOptional.isPresent()){
-            throw new RuntimeException("Recipe Not Found");
+            throw new NotFoundException("Recipe Not Found. For Id value: " + l.toString() );
         }
         return recipeOptional.get();
     }
